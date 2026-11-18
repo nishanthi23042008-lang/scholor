@@ -40,13 +40,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800 bg-[#0B162C] text-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-3.5 sm:px-6 lg:px-8">
-        {/* Zone 1: Single-line brand wordmark */}
+        {/* Zone 1: Brand lockup with RIT logo */}
         <button
           type="button"
           onClick={() => handleNav('landing')}
-          className="text-left text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
+          className="flex items-center gap-3 text-left whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
         >
-          ScholarShield
+          <img
+            src="/assets/aistudio/image_8457735b.png"
+            alt="Rajeev Institute of Technology Logo"
+            className="h-9 w-9 rounded-md bg-white object-contain p-0.5 shrink-0"
+          />
+          <span className="flex flex-col leading-tight">
+            <span className="text-base font-bold tracking-tight text-white">ScholarShield</span>
+            <span className="hidden text-[11px] font-medium text-cyan-300 sm:block">
+              Rajeev Institute of Technology · Dept. of Computer Science
+            </span>
+          </span>
         </button>
 
         {/* Zone 2: 5 concise single-line text nav links */}
