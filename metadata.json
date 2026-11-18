@@ -1,0 +1,6 @@
+{
+  "name": "ScholarShield",
+  "description": "Discover Opportunities. Verify Scholarships. Protect Your Future. Indian scholarship discovery, verification engine, and cybersecurity URL scanner.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
