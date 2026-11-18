@@ -12,6 +12,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { ActivePage } from './Navbar';
+import { DeadlineAlertSignup } from './DeadlineAlertSignup';
 
 interface LandingPageProps {
   onNavigate: (page: ActivePage) => void;
@@ -115,6 +116,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   >
                     <Lock className="h-4 w-4" aria-hidden="true" />
                     Scan a Scholarship URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('skillbridge')}
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-cyan-500/50 bg-slate-900/60 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 whitespace-nowrap shrink-0"
+                  >
+                    SkillBridge Learning Roadmap
+                    <ArrowRight className="h-4 w-4 text-cyan-400" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -250,6 +259,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </form>
         </div>
+      </section>
+
+      {/* 2B. DEADLINE EMAIL ALERTS */}
+      <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6 lg:px-8">
+        <DeadlineAlertSignup />
       </section>
 
       {/* 3. HOW SCHOLARSHIELD WORKS */}
@@ -528,6 +542,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="mt-3 flex flex-col gap-2 text-xs">
                 <button type="button" onClick={() => onNavigate('discover')} className="text-left hover:text-white">
                   Scholarship Discovery Engine
+                </button>
+                <button type="button" onClick={() => onNavigate('skillbridge')} className="text-left hover:text-white">
+                  SkillBridge Learning Roadmap
                 </button>
                 <button type="button" onClick={() => onNavigate('scanner')} className="text-left hover:text-white">
                   Cybersecurity URL Scanner

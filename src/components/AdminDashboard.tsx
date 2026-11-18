@@ -4,6 +4,7 @@ import {
   Archive,
   CheckCircle2,
   Lock,
+  Mail,
   Plus,
   ShieldCheck,
   Trash2,
@@ -187,7 +188,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onOpenAdminAuth 
 
   const handleUpdateDeadline = async (sch: Scholarship, nextDeadline: string) => {
     try {
-      await apiRequest(
+      const res = await apiRequest<{
+        alertStats?: { matchedSubscribers: number; emailedCount: number; providerConfigured: boolean } | null;
+      }>(
         `/api/admin/scholarships/${sch.id}`,
         {
           method: 'PUT',
@@ -195,10 +198,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onOpenAdminAuth 
         },
         token
       );
-      setFeedback(`Updated deadline for "${sch.title}".`);
+      const alertNote = res.alertStats
+        ? ` Matched ${res.alertStats.matchedSubscribers} subscriber(s), emailed ${res.alertStats.emailedCount}.`
+        : '';
+      setFeedback(`Updated deadline for "${sch.title}".${alertNote}`);
       await loadAdminOverview();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update deadline.');
+    }
+  };
+
+  const handleSendDeadlineAlert = async (sch: Scholarship) => {
+    setError('');
+    setFeedback('');
+    try {
+      const res = await apiRequest<{
+        matchedSubscribers: number;
+        emailedCount: number;
+        providerConfigured: boolean;
+      }>(
+        `/api/admin/scholarships/${sch.id}/send-deadline-alert`,
+        { method: 'POST' },
+        token
+      );
+      setFeedback(
+        res.providerConfigured
+          ? `Deadline alert for "${sch.title}": ${res.emailedCount}/${res.matchedSubscribers} matching subscriber(s) emailed via Resend.`
+          : `Matched ${res.matchedSubscribers} subscriber(s) for "${sch.title}" (configure RESEND_API_KEY in .env to dispatch live emails).`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send deadline alert.');
     }
   };
 
@@ -546,19 +575,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onOpenAdminAuth 
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-600">
-                      <span>Deadline:</span>
-                      <input
-                        type="text"
-                        defaultValue={sch.deadlineDate}
-                        onBlur={(e) => {
-                          if (e.target.value !== sch.deadlineDate) {
-                            handleUpdateDeadline(sch, e.target.value);
-                          }
-                        }}
-                        className="rounded border border-slate-300 px-2 py-1 font-mono text-xs"
-                      />
-                      <span className="text-slate-400">(edit &amp; blur to update deadline)</span>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span>Deadline:</span>
+                        <input
+                          type="text"
+                          defaultValue={sch.deadlineDate}
+                          onBlur={(e) => {
+                            if (e.target.value !== sch.deadlineDate) {
+                              handleUpdateDeadline(sch, e.target.value);
+                            }
+                          }}
+                          className="rounded border border-slate-300 px-2 py-1 font-mono text-xs"
+                        />
+                        <span className="text-slate-400">(edit &amp; blur to update &amp; notify)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleSendDeadlineAlert(sch)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-100"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        Send Deadline Alert Email
+                      </button>
                     </div>
                   </div>
                 ))}

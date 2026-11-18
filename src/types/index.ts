@@ -193,3 +193,18 @@ export interface AuditLogEntry {
   details: Record<string, unknown>;
   createdAt: string;
 }
+
+export interface DeadlineSubscription {
+  id: number;
+  email: string;
+  userUid: string | null;
+  educationLevel: string;
+  courseStream: string;
+  stateScope: string;
+  isActive: boolean;
+  welcomeEmailSent: boolean;
+  lastNotifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+

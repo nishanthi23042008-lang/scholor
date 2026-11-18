@@ -4,6 +4,7 @@ import { db } from '../db/index.ts';
 import {
   adminAuditLogs,
   applications,
+  deadlineEmailSubscriptions,
   eligibilityCriteria,
   notifications,
   profiles,
@@ -21,6 +22,11 @@ import { evaluateEligibility } from '../services/eligibility.ts';
 import { analyzeScholarshipUrl } from '../services/urlScanner.ts';
 import { generateGroundedExplanation } from '../services/gemini.ts';
 import { createNotification } from '../services/notifications.ts';
+import {
+  broadcastScholarshipDeadlineAlert,
+  isEmailServiceConfigured,
+  sendDeadlineSubscriptionConfirmationEmail,
+} from '../services/email.ts';
 
 export const apiRouter = Router();
 
@@ -787,6 +793,178 @@ apiRouter.post('/notifications/mark-all-read', requireAuth, async (req: AuthRequ
 });
 
 // ==========================================
+// 6B. SCHOLARSHIP DEADLINE EMAIL SUBSCRIPTIONS
+// ==========================================
+apiRouter.get('/deadline-subscriptions/status', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    await ensureSeeded();
+    const emailParam =
+      typeof req.query.email === 'string'
+        ? req.query.email.trim().toLowerCase()
+        : req.profile?.email?.toLowerCase() || '';
+
+    let subscription = null;
+    if (emailParam) {
+      const rows = await db
+        .select()
+        .from(deadlineEmailSubscriptions)
+        .where(eq(deadlineEmailSubscriptions.email, emailParam))
+        .limit(1);
+      subscription = rows[0] || null;
+    }
+
+    res.json({
+      emailServiceConfigured: isEmailServiceConfigured(),
+      subscription,
+    });
+  } catch (error) {
+    console.error('Error checking deadline subscription status:', error);
+    res.status(500).json({ error: 'Unable to check email alert subscription status.' });
+  }
+});
+
+apiRouter.post('/deadline-subscriptions', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    await ensureSeeded();
+    const {
+      email,
+      educationLevel = 'All',
+      courseStream = 'All',
+      stateScope = 'All India',
+    } = req.body as {
+      email?: string;
+      educationLevel?: string;
+      courseStream?: string;
+      stateScope?: string;
+    };
+
+    const normalizedEmail = (email || req.profile?.email || '').trim().toLowerCase();
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+
+    const cleanLevel = String(educationLevel || 'All').trim().slice(0, 60) || 'All';
+    const cleanStream = String(courseStream || 'All').trim().slice(0, 80) || 'All';
+    const cleanState = String(stateScope || 'All India').trim().slice(0, 80) || 'All India';
+
+    const existing = await db
+      .select()
+      .from(deadlineEmailSubscriptions)
+      .where(eq(deadlineEmailSubscriptions.email, normalizedEmail))
+      .limit(1);
+
+    const { result: emailResult, upcomingCount } = await sendDeadlineSubscriptionConfirmationEmail({
+      email: normalizedEmail,
+      educationLevel: cleanLevel,
+      courseStream: cleanStream,
+      stateScope: cleanState,
+    });
+
+    let subscription;
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(deadlineEmailSubscriptions)
+        .set({
+          userUid: req.profile?.uid || existing[0].userUid,
+          educationLevel: cleanLevel,
+          courseStream: cleanStream,
+          stateScope: cleanState,
+          isActive: true,
+          welcomeEmailSent: existing[0].welcomeEmailSent || emailResult.sent,
+          lastNotifiedAt: emailResult.sent ? new Date() : existing[0].lastNotifiedAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(deadlineEmailSubscriptions.id, existing[0].id))
+        .returning();
+      subscription = updated;
+    } else {
+      const [created] = await db
+        .insert(deadlineEmailSubscriptions)
+        .values({
+          email: normalizedEmail,
+          userUid: req.profile?.uid || null,
+          educationLevel: cleanLevel,
+          courseStream: cleanStream,
+          stateScope: cleanState,
+          isActive: true,
+          welcomeEmailSent: emailResult.sent,
+          lastNotifiedAt: emailResult.sent ? new Date() : null,
+        })
+        .returning();
+      subscription = created;
+    }
+
+    // Keep signed-in student profile synced with email reminder opt-in
+    if (req.profile && req.profile.email.toLowerCase() === normalizedEmail) {
+      await db
+        .update(profiles)
+        .set({
+          emailReminders: true,
+          deadlineReminders: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(profiles.uid, req.profile.uid));
+
+      await createNotification({
+        userUid: req.profile.uid,
+        type: 'deadline',
+        title: 'Scholarship Deadline Email Alerts Enabled',
+        message: `Subscribed ${normalizedEmail} for ${cleanLevel} · ${cleanStream} · ${cleanState} deadline updates.`,
+        linkTarget: 'discover',
+      });
+    }
+
+    res.status(201).json({
+      subscription,
+      emailSent: emailResult.sent,
+      provider: emailResult.provider,
+      emailStatusMessage: emailResult.sent
+        ? `Confirmation email with ${upcomingCount} upcoming verified deadlines sent to ${normalizedEmail}.`
+        : isEmailServiceConfigured()
+          ? `Subscription saved (${emailResult.reason || 'email delivery queued'}).`
+          : `Subscription saved for ${normalizedEmail}. Live emails will dispatch automatically once RESEND_API_KEY is active on the server.`,
+      upcomingCount,
+    });
+  } catch (error) {
+    console.error('Error subscribing to deadline alerts:', error);
+    res.status(500).json({ error: 'Unable to save deadline email notification preference.' });
+  }
+});
+
+apiRouter.delete('/deadline-subscriptions', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    const emailParam =
+      typeof req.query.email === 'string'
+        ? req.query.email
+        : typeof (req.body as { email?: string } | undefined)?.email === 'string'
+          ? (req.body as { email?: string }).email
+          : req.profile?.email;
+
+    const normalizedEmail = (emailParam || '').trim().toLowerCase();
+    if (!normalizedEmail) {
+      return res.status(400).json({ error: 'Email address is required to unsubscribe.' });
+    }
+
+    await db
+      .update(deadlineEmailSubscriptions)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(deadlineEmailSubscriptions.email, normalizedEmail));
+
+    if (req.profile && req.profile.email.toLowerCase() === normalizedEmail) {
+      await db
+        .update(profiles)
+        .set({ emailReminders: false, updatedAt: new Date() })
+        .where(eq(profiles.uid, req.profile.uid));
+    }
+
+    res.json({ unsubscribed: true, email: normalizedEmail });
+  } catch (error) {
+    console.error('Error unsubscribing from deadline alerts:', error);
+    res.status(500).json({ error: 'Failed to unsubscribe from deadline alerts.' });
+  }
+});
+
+// ==========================================
 // 7. CYBERSECURITY URL SCANNER
 // ==========================================
 apiRouter.post('/scanner/analyze', optionalAuth, async (req: AuthRequest, res) => {
@@ -1108,7 +1286,15 @@ apiRouter.post('/admin/scholarships', requireAdmin, async (req: AuthRequest, res
       details: { title: created.title, verificationStatus: status },
     });
 
-    res.status(201).json({ scholarship: created });
+    const alertStats =
+      created.verificationStatus !== 'SUSPICIOUS'
+        ? await broadcastScholarshipDeadlineAlert({
+            scholarship: created,
+            eventType: 'new_scholarship',
+          })
+        : { matchedSubscribers: 0, emailedCount: 0, providerConfigured: isEmailServiceConfigured() };
+
+    res.status(201).json({ scholarship: created, alertStats });
   } catch (error) {
     console.error('Admin create scholarship error:', error);
     res.status(500).json({ error: 'Failed to create scholarship record.' });
@@ -1150,10 +1336,46 @@ apiRouter.put('/admin/scholarships/:id', requireAdmin, async (req: AuthRequest, 
       details: { deadlineDate: updated.deadlineDate, title: updated.title },
     });
 
-    res.json({ scholarship: updated });
+    let alertStats = null;
+    if (existing[0].deadlineDate !== updated.deadlineDate && updated.verificationStatus !== 'SUSPICIOUS') {
+      alertStats = await broadcastScholarshipDeadlineAlert({
+        scholarship: updated,
+        eventType: 'deadline_updated',
+      });
+    }
+
+    res.json({ scholarship: updated, alertStats });
   } catch (error) {
     console.error('Admin update scholarship error:', error);
     res.status(500).json({ error: 'Failed to update scholarship.' });
+  }
+});
+
+apiRouter.post('/admin/scholarships/:id/send-deadline-alert', requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    const id = Number(req.params.id);
+    const rows = await db.select().from(scholarships).where(eq(scholarships.id, id)).limit(1);
+    if (!rows.length) {
+      return res.status(404).json({ error: 'Scholarship not found.' });
+    }
+    const stats = await broadcastScholarshipDeadlineAlert({
+      scholarship: rows[0],
+      eventType: 'manual_broadcast',
+    });
+
+    await db.insert(adminAuditLogs).values({
+      actorUid: req.profile!.uid,
+      actorEmail: req.profile!.email,
+      action: 'BROADCAST_DEADLINE_ALERT',
+      entityType: 'scholarship',
+      entityId: String(id),
+      details: stats,
+    });
+
+    res.json({ ok: true, ...stats });
+  } catch (error) {
+    console.error('Admin broadcast deadline alert error:', error);
+    res.status(500).json({ error: 'Failed to send deadline alert emails.' });
   }
 });
 

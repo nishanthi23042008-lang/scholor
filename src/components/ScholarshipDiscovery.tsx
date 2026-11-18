@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api';
 import { EligibilityResult, Scholarship } from '../types';
 import { VerificationBadge } from './StatusBadge';
+import { DeadlineAlertSignup } from './DeadlineAlertSignup';
 
 interface ScholarshipDiscoveryProps {
   initialQuery?: string;
@@ -506,6 +507,16 @@ export const ScholarshipDiscovery: React.FC<ScholarshipDiscoveryProps> = ({
             <span>Hide &ldquo;Not Eligible&rdquo; schemes for typed eligibility data</span>
           </label>
         </div>
+      </div>
+
+      {/* Email Deadline Alert Signup */}
+      <div className="mt-6">
+        <DeadlineAlertSignup
+          compact
+          defaultLevel={educationLevel}
+          defaultStream={courseStream}
+          defaultState={stateFilter === 'All' ? 'All India' : stateFilter}
+        />
       </div>
 
       {/* Results Area */}

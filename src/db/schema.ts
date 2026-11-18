@@ -230,6 +230,25 @@ export const adminAuditLogs = pgTable('admin_audit_logs', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// 13. deadline_email_subscriptions (Public & student email alert signups)
+export const deadlineEmailSubscriptions = pgTable(
+  'deadline_email_subscriptions',
+  {
+    id: serial('id').primaryKey(),
+    email: text('email').notNull(),
+    userUid: text('user_uid'),
+    educationLevel: text('education_level').notNull().default('All'),
+    courseStream: text('course_stream').notNull().default('All'),
+    stateScope: text('state_scope').notNull().default('All India'),
+    isActive: boolean('is_active').notNull().default(true),
+    welcomeEmailSent: boolean('welcome_email_sent').notNull().default(false),
+    lastNotifiedAt: timestamp('last_notified_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('deadline_sub_email_idx').on(table.email)]
+);
+
 // Relations
 export const scholarshipsRelations = relations(scholarships, ({ many }) => ({
   sources: many(scholarshipSources),

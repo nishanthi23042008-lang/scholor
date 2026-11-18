@@ -19,6 +19,7 @@ import {
   SecurityScanResult,
 } from '../types';
 import { VerificationBadge } from './StatusBadge';
+import { DeadlineAlertSignup } from './DeadlineAlertSignup';
 
 interface StudentDashboardProps {
   onOpenAuth: () => void;
@@ -868,7 +869,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
           {/* TAB 5: NOTIFICATIONS */}
           {tab === 'notifications' && data && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 space-y-6">
+              <DeadlineAlertSignup compact onSubscriptionChanged={loadDashboard} />
+
               <div className="flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
                   <Bell className="h-5 w-5 text-blue-700" />

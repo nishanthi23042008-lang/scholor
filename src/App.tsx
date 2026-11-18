@@ -8,6 +8,7 @@ import { StudentDashboard } from './components/StudentDashboard';
 import { ReportScamPage } from './components/ReportScamPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AuthModal } from './components/AuthModal';
+import { SkillBridgePage } from './components/SkillBridgePage';
 
 function AppShell() {
   const [activePage, setActivePage] = useState<ActivePage>('landing');
@@ -70,6 +71,8 @@ function AppShell() {
             onOpenScannerWithUrl={handleOpenScannerWithUrl}
           />
         )}
+
+        {activePage === 'skillbridge' && <SkillBridgePage />}
 
         {activePage === 'scanner' && (
           <UrlScannerPage initialUrl={scannerInitialUrl} />

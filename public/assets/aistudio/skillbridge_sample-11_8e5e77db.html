@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillBridge | Your Learning Roadmap</title>
+<style>
+:root{--navy:#102747;--blue:#2878d0;--pale:#eef5ff;--ink:#17263c;--muted:#64748b;--line:#e4eaf2}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f8fc;color:var(--ink)}
+header{background:linear-gradient(120deg,#102747,#174d80);color:white;padding:24px max(20px,calc((100% - 1050px)/2))}
+.brand{font-size:23px;font-weight:800;letter-spacing:.3px}.brand span{color:#80c2ff}
+.hero{max-width:1050px;margin:0 auto;padding:36px 20px 26px;color:white}header p{color:#d7e7fa;margin:8px 0 0}
+main{max-width:1050px;margin:24px auto;padding:0 20px 50px}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 8px 28px #183b6310}
+h1{font-size:clamp(27px,4vw,40px);margin:0 0 8px}.sub{color:var(--muted);margin:0 0 22px;line-height:1.5}
+label{display:block;font-weight:700;font-size:14px;margin:0 0 8px}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+select{width:100%;padding:13px;border:1px solid #ccd7e5;border-radius:10px;background:white;color:var(--ink);font-size:15px}
+button{margin-top:20px;background:var(--blue);color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;font-size:15px;cursor:pointer}
+button:hover{background:#1d62ad}
+#result{display:none;margin-top:22px}.result-head{background:var(--pale);padding:20px;border-radius:14px;margin-bottom:18px}
+.result-head h2{margin:0 0 6px}.tag{display:inline-block;background:#dcecff;color:#185b9d;padding:6px 10px;border-radius:30px;font-size:12px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:13px;padding:17px;background:#fff}
+.card h3{font-size:16px;margin:0 0 10px}.card ul{padding-left:19px;margin:0;color:#526176;line-height:1.8;font-size:14px}
+.note{color:var(--muted);font-size:13px;margin-top:17px;line-height:1.5}
+footer{text-align:center;color:#718096;font-size:13px;padding:20px}
+@media(max-width:650px){.controls,.cards{grid-template-columns:1fr}.panel{padding:18px}.hero{padding-top:28px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Skill<span>Bridge</span></div>
+  <p>Learn Today. Build Skills. Shape Your Future.</p>
+</header>
+<main>
+  <section class="panel">
+    <h1>Find Your Learning Roadmap</h1>
+    <p class="sub">Choose your current education details. SkillBridge will show a roadmap that matches your selection.</p>
+    <div class="controls">
+      <div><label for="level">Education level</label><select id="level"><option value="1st PUC">1st PUC</option><option value="2nd PUC">2nd PUC</option><option value="Engineering">Engineering</option><option value="Degree">Degree</option></select></div>
+      <div><label for="stream">Course / Stream</label><select id="stream"><option>Science</option><option>Commerce</option><option>Arts</option></select></div>
+      <div><label for="combo">Combination / Branch</label><select id="combo"><option>PCMC</option><option>PCMB</option><option>PCMS</option></select></div>
+      <div><label for="year">Academic year</label><select id="year"><option>Year 1</option><option>Year 2</option><option>Year 3</option><option>Year 4</option></select></div>
+      <div><label for="language">Language</label><select id="language"><option>English</option><option>Kannada</option></select></div>
+    </div>
+    <button onclick="showRoadmap()">Show My Roadmap →</button>
+    <p class="note">Free access • Student-friendly • Your selected course, your roadmap</p>
+  </section>
+  <section id="result" class="panel" aria-live="polite">
+    <div class="result-head"><span class="tag">YOUR ROADMAP</span><h2 id="title">1st PUC · Science · PCMC</h2><p id="intro" class="sub" style="margin:0">A simple starting roadmap for your learning journey.</p></div>
+    <div class="cards">
+      <article class="card"><h3>📚 Subjects</h3><ul id="subjects"></ul></article>
+      <article class="card"><h3>💡 Skills to develop</h3><ul id="skills"></ul></article>
+      <article class="card"><h3>🌱 Learning activities</h3><ul id="activities"></ul></article>
+      <article class="card"><h3>🚀 Explore next</h3><ul id="future"></ul></article>
+    </div>
+    <p class="note" id="disclaimer">Sample roadmap. Confirm subject combinations and syllabus with your institution or education board.</p>
+  </section>
+
+  <section class="panel" style="margin-top:22px">
+    <h2 style="margin:0 0 8px">💬 Ask Your Doubt</h2>
+    <p class="sub">Ask a question about your course or branch. Find helpful video lessons and learning resources.</p>
+    <label for="doubt">Type your question</label>
+    <input id="doubt" type="text" placeholder="Example: What is a pointer in C?"
+      style="width:100%;padding:14px;border:1px solid #ccd7e5;border-radius:10px;font-size:15px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" onclick="searchLearning('youtube')">▶ Find YouTube Videos</button>
+      <button type="button" onclick="searchLearning('khan')" style="background:#16836a">Explore Khan Academy</button>
+      <button type="button" onclick="searchLearning('nptel')" style="background:#53657d">Explore NPTEL</button>
+    </div>
+    <p class="note">Search results open on the selected learning platform. Check that each lesson matches your syllabus and learning level.</p>
+  </section>
+
+
+  <section class="panel" style="margin-top:22px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <span class="tag">100% FREE ACCESS</span>
+        <h2 style="margin:10px 0 6px">🎓 Free Learning Hub</h2>
+        <p class="sub" style="margin:0">Learn without paying for video lessons, practice and study resources.</p>
+      </div>
+    </div>
+    <div class="cards" style="margin-top:18px">
+      <article class="card"><h3>▶ Free Video Lessons</h3><p class="note">Find free lessons for your selected subject and topic.</p><button type="button" onclick="openFreeResource('youtube')">Watch Free Videos</button></article>
+      <article class="card"><h3>📘 Free Study Lessons</h3><p class="note">Explore free explanations and practice lessons.</p><button type="button" onclick="openFreeResource('khan')">Explore Khan Academy</button></article>
+      <article class="card"><h3>🧪 Free Courses</h3><p class="note">Explore courses you can study for free. Optional certificates or exams may cost money.</p><button type="button" onclick="openFreeResource('swayam')">Explore SWAYAM</button></article>
+      <article class="card"><h3>💻 Free Technical Learning</h3><p class="note">Explore free technical courses and recorded lectures.</p><button type="button" onclick="openFreeResource('nptel')">Explore NPTEL</button></article>
+    </div>
+    <p class="note">SkillBridge will prioritize resources that are free to access. Some platforms may charge for certificates, exams or optional services. Always check the course details before enrolling.</p>
+  </section>
+
+</main>
+<footer>© 2026 SkillBridge · A learning roadmap for every student</footer>
+<script>
+const $=id=>document.getElementById(id);
+const sets={
+  "PCMC":{subjects:["Physics","Chemistry","Mathematics","Computer Science"],skills:["Logical thinking","Basic programming","Problem solving","Communication"],activities:["Practise maths problems regularly","Try beginner coding exercises","Make short notes for each topic"],future:["Computer Science","Engineering","Data Science","Technology-related degrees"]},
+  "PCMB":{subjects:["Physics","Chemistry","Mathematics","Biology"],skills:["Observation","Scientific thinking","Problem solving","Communication"],activities:["Draw and label science diagrams","Practise numerical problems","Explore simple science activities"],future:["Engineering","Medicine-related pathways","Life sciences","Biotechnology"]},
+  "PCMS":{subjects:["Physics","Chemistry","Mathematics","Statistics"],skills:["Data interpretation","Logical thinking","Numerical skills","Communication"],activities:["Practise calculations","Read simple data charts","Explore beginner spreadsheet tasks"],future:["Statistics","Data Science","Engineering","Science degrees"]},
+  "Commerce":{subjects:["Accountancy","Business Studies","Economics","Language subjects"],skills:["Financial awareness","Communication","Basic spreadsheets","Analytical thinking"],activities:["Prepare a simple budget","Practise basic accounting entries","Read a business news story"],future:["B.Com","BBA","Economics","Finance-related courses"]},
+  "Arts":{subjects:["History","Political Science","Sociology","Language subjects"],skills:["Writing","Research","Critical thinking","Communication"],activities:["Write a short topic summary","Compare two viewpoints","Practise public speaking"],future:["BA programmes","Law","Journalism","Social sciences"]}
+};
+function addItems(id,items){$(id).innerHTML=items.map(x=>`<li>${x}</li>`).join("")}
+function showRoadmap(){
+ const level=$("level").value,stream=$("stream").value,combo=$("combo").value,year=$("year").value,lang=$("language").value;
+ let data=sets[combo]||sets[stream]||sets.PCMC;
+ if(level==="Engineering"){
+   data={subjects:["Branch core subjects","Mathematics and science foundations","Practical / laboratory subjects"],skills:["Programming or branch tools","Teamwork","Problem solving","Technical communication"],activities:["Build a small branch-related project","Practise practical lab skills","Create a project portfolio"],future:["Internships","Advanced projects","Higher studies","Entry-level roles in your branch"]};
+ }
+ if(level==="Degree"){
+   data={subjects:["Core course subjects","Elective subjects","Practical / project work"],skills:["Research","Communication","Digital skills","Problem solving"],activities:["Complete a mini project","Attend a learning workshop","Build a portfolio"],future:["Higher studies","Professional certifications","Internships","Related career paths"]};
+ }
+ $("title").textContent=`${level} · ${stream} · ${combo}`;
+ $("intro").textContent=`${year} learning guide · Language: ${lang}`;
+ addItems("subjects",data.subjects);addItems("skills",data.skills);addItems("activities",data.activities);addItems("future",data.future);
+ $("result").style.display="block";$("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("level").addEventListener("change",()=>{
+ const isPuc=$("level").value.includes("PUC");
+ $("stream").disabled=!isPuc;$("combo").disabled=!isPuc;
+ if(!isPuc){$("stream").value="Science";$("combo").value="PCMC"}
+});
+$("stream").addEventListener("change",()=>{
+ const s=$("stream").value,opts=s==="Science"?["PCMC","PCMB","PCMS"]:s==="Commerce"?["Commerce"]:["Arts"];
+ $("combo").innerHTML=opts.map(x=>`<option>${x}</option>`).join("");
+});
+
+function searchLearning(platform){
+ const question=$("doubt").value.trim();
+ if(!question){$("doubt").focus();alert("Please type your doubt first.");return;}
+ const context=`${$("level").value} ${$("stream").value} ${$("combo").value} ${question}`;
+ const q=encodeURIComponent(context);
+ const urls={
+   youtube:`https://www.youtube.com/results?search_query=${q}`,
+   khan:`https://www.khanacademy.org/search?page_search_query=${q}`,
+   nptel:`https://nptel.ac.in/courses?search=${q}`
+ };
+ window.open(urls[platform],"_blank","noopener,noreferrer");
+}
+
+
+function openFreeResource(platform){
+ const level=$("level").value, stream=$("stream").value, combo=$("combo").value;
+ const q=encodeURIComponent(`${level} ${stream} ${combo} free lessons`);
+ const urls={
+  youtube:`https://www.youtube.com/results?search_query=${q}+full+course+free`,
+  khan:"https://www.khanacademy.org/",
+  swayam:"https://swayam.gov.in/",
+  nptel:"https://nptel.ac.in/"
+ };
+ window.open(urls[platform],"_blank","noopener,noreferrer");
+}
+
+</script>
+</body>
+</html>

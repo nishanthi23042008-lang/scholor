@@ -1,6 +1,7 @@
 import { db } from '../db/index.ts';
 import { notifications, profiles } from '../db/schema.ts';
 import { eq } from 'drizzle-orm';
+import { isEmailServiceConfigured, sendEmail } from './email.ts';
 
 export async function createNotification(params: {
   userUid: string;
@@ -27,8 +28,7 @@ export async function createNotification(params: {
     .returning();
 
   // Optional transactional email dispatch if RESEND_API_KEY is configured and user opted in
-  const resendKey = process.env.RESEND_API_KEY;
-  if (resendKey) {
+  if (isEmailServiceConfigured()) {
     try {
       const userRows = await db
         .select()
@@ -38,18 +38,10 @@ export async function createNotification(params: {
 
       const userProfile = userRows[0];
       if (userProfile?.email && userProfile.emailReminders) {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${resendKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: process.env.EMAIL_FROM || 'ScholarShield Alerts <onboarding@resend.dev>',
-            to: [userProfile.email],
-            subject: `[ScholarShield] ${params.title}`,
-            text: `${params.message}\n\nLog in to ScholarShield to review your dashboard.`,
-          }),
+        await sendEmail({
+          to: userProfile.email,
+          subject: `[ScholarShield] ${params.title}`,
+          text: `${params.message}\n\nLog in to ScholarShield to review your dashboard.`,
         });
       }
     } catch (emailErr) {

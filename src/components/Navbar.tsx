@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 export type ActivePage =
   | 'landing'
   | 'discover'
+  | 'skillbridge'
   | 'scanner'
   | 'dashboard'
   | 'report'
@@ -26,6 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems: Array<{ id: ActivePage; label: string }> = [
     { id: 'discover', label: 'Discover' },
+    { id: 'skillbridge', label: 'SkillBridge' },
     { id: 'scanner', label: 'URL Scanner' },
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'report', label: 'Report Scam' },
@@ -71,10 +73,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </button>
 
-        {/* Zone 2: 5 concise single-line text nav links */}
+        {/* Zone 2: Concise single-line text nav links */}
         <nav
           aria-label="Primary navigation"
-          className="hidden md:flex items-center gap-6 text-sm font-medium"
+          className="hidden md:flex items-center gap-5 text-sm font-medium"
         >
           {navItems.map((item) => {
             const isActive = activePage === item.id;
