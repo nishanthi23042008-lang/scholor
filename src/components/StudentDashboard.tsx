@@ -333,8 +333,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             <div className="mt-6 space-y-8">
               {/* Institution, Department & GDG Chapter Banner */}
               <div className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2 shrink-0">
+                    <img
+                      src="/assets/aistudio/gdg_campus_rit_logo.png"
+                      alt="GDG on Campus RIT Hassan Logo"
+                      className="h-14 w-14 rounded-full border border-slate-200 bg-white object-contain p-0.5 shrink-0"
+                    />
                     <img
                       src="/assets/aistudio/image_8457735b.png"
                       alt="Rajeev Institute of Technology Logo"
@@ -343,7 +348,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     <img
                       src="/assets/aistudio/cse_department_logo.png"
                       alt="Department of Computer Science & Engineering Logo"
-                      className="h-14 w-14 rounded-full border border-slate-200 object-contain shrink-0"
+                      className="h-14 w-14 rounded-full border border-slate-200 bg-white object-contain p-0.5 shrink-0"
                     />
                   </div>
                   <div>
