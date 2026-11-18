@@ -40,17 +40,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800 bg-[#0B162C] text-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-3.5 sm:px-6 lg:px-8">
-        {/* Zone 1: Brand lockup with RIT logo */}
+        {/* Zone 1: Brand lockup with RIT and CSE logos */}
         <button
           type="button"
           onClick={() => handleNav('landing')}
-          className="flex items-center gap-3 text-left whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
+          className="flex items-center gap-2.5 text-left whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
         >
-          <img
-            src="/assets/aistudio/image_8457735b.png"
-            alt="Rajeev Institute of Technology Logo"
-            className="h-9 w-9 rounded-md bg-white object-contain p-0.5 shrink-0"
-          />
+          <span className="flex items-center gap-1.5 shrink-0">
+            <img
+              src="/assets/aistudio/image_8457735b.png"
+              alt="Rajeev Institute of Technology Logo"
+              className="h-9 w-9 rounded-full bg-white object-contain p-0.5 shrink-0"
+            />
+            <img
+              src="/assets/aistudio/cse_department_logo.png"
+              alt="Department of Computer Science & Engineering Logo"
+              className="h-9 w-9 rounded-full object-contain shrink-0"
+            />
+          </span>
           <span className="flex flex-col leading-tight">
             <span className="text-base font-bold tracking-tight text-white">ScholarShield</span>
             <span className="hidden text-[11px] font-medium text-cyan-300 sm:block">
